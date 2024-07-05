@@ -31,14 +31,35 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: '20'
+          cache: 'pnpm'
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Check for lock file
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "Found package-lock.json"
+          elif [ -f npm-shrinkwrap.json ]; then
+            echo "Found npm-shrinkwrap.json"
+          elif [ -f yarn.lock ]; then
+            echo "Found yarn.lock"
+          elif [ -f pnpm-lock.yaml ]; then
+            echo "Found pnpm-lock.yaml"
+          else
+            echo "Error: No lock file found" >&2
+            exit 1
       - name: Install dependencies
-        run: npm install
-      - name: Install CI Dependencies
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f npm-shrinkwrap.json ]; then
+            npm ci
+          elif [ -f yarn.lock ]; then
+            yarn install
+          elif [ -f pnpm-lock.yaml ]; then
+            pnpm install
       - name: Build
-        run: npm run build
+        run: pnpm run build
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
